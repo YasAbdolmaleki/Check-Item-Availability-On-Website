@@ -1,10 +1,16 @@
-# import libraries
 import urllib2
 import smtplib
 import schedule
 import time
 from bs4 import BeautifulSoup
 from datetime import datetime  
+
+# Change these 2 to reuse for other websites:
+# urlLink = "https://ca.louisvuitton.com/eng-ca/products/anachronism-belt-nvprod1070075v"	# testing purpose
+urlLink = "https://eu.louisvuitton.com/eng-e1/products/pochette-accessoires-monogram-005656"
+searchingItem = "button"
+searchingAttributes = {"id": "addToCartSubmit"}
+emailToNotify  = 'yasmarcu@gmail.com'
 
 def startScrappingSchedule():
 	schedule.every(1).minutes.do(scrapePage)
@@ -14,7 +20,6 @@ def startScrappingSchedule():
 
 def sendGmail():
 	fromaddr = 'timetospendthemoney@gmail.com'
-	toaddrs  = 'yasmarcu@gmail.com'
 	msg = "\r\n".join([
 	  "From: timetospendthemoney@gmail.com",
 	  "To: you@gmail.com",
@@ -29,19 +34,16 @@ def sendGmail():
 	server.ehlo()
 	server.starttls()
 	server.login(username,password)
-	server.sendmail(fromaddr, toaddrs, msg)
+	server.sendmail(fromaddr, emailToNotify, msg)
 	server.quit()
 
 def scrapePage():
 	print "checked time: " + str(datetime.now())
-
-	# urlLink = "https://ca.louisvuitton.com/eng-ca/products/anachronism-belt-nvprod1070075v"	# testing purpose
-	urlLink = "https://eu.louisvuitton.com/eng-e1/products/pochette-accessoires-monogram-005656"
 	openUrl = urllib2.urlopen(urlLink)
 	parsePage = BeautifulSoup(openUrl, "html.parser")
-	addToCartButton = parsePage.find("button", attrs={"id": "addToCartSubmit"}) # Take out the <div> of name and get its value
+	findAddToCartButton = parsePage.find(searchingItem, attrs=searchingAttributes) # Take out the <div> of name and get its value
 
-	if addToCartButton:
+	if findAddToCartButton:
 		print "YAYYYYY"
 		sendGmail()
 	else:
